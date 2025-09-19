@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Star, Calendar, MessageCircle, CheckCircle, XCircle } from 'lucide-react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  Star,
+  Calendar,
+  MessageCircle,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import axios from "axios";
 
 function ChatHistory({ onBack }) {
   const [chats, setChats] = useState([]);
@@ -8,7 +15,7 @@ function ChatHistory({ onBack }) {
   const [error, setError] = useState(null);
 
   // API Base URL configuration for production
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}` || "";
 
   useEffect(() => {
     fetchChatHistory();
@@ -21,26 +28,29 @@ function ChatHistory({ onBack }) {
       if (response.data.success) {
         setChats(response.data.chats);
       } else {
-        setError('Failed to load chat history');
+        setError("Failed to load chat history");
       }
     } catch (error) {
-      console.error('Error fetching chat history:', error);
-      setError('Failed to load chat history. Please check your connection.');
+      console.error("Error fetching chat history:", error);
+      setError("Failed to load chat history. Please check your connection.");
     } finally {
       setLoading(false);
     }
   };
 
   const StarRating = ({ rating }) => {
-    if (!rating) return <span className="text-xs text-gray-400">Not rated</span>;
-    
+    if (!rating)
+      return <span className="text-xs text-gray-400">Not rated</span>;
+
     return (
       <div className="flex items-center space-x-1">
-        {[1,2,3,4,5].map(star => (
+        {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={`w-3 h-3 ${
-              star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+              star <= rating
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300"
             }`}
           />
         ))}
@@ -51,16 +61,16 @@ function ChatHistory({ onBack }) {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const renderText = (rawText) => {
-    const lines = rawText.split('\n').filter(line => line.trim());
+    const lines = rawText.split("\n").filter((line) => line.trim());
 
     return (
       <div className="space-y-1">
@@ -69,16 +79,19 @@ function ChatHistory({ onBack }) {
           if (!trimmed) return null;
 
           // Main headings
-          if (trimmed.startsWith('## ')) {
+          if (trimmed.startsWith("## ")) {
             return (
-              <h3 key={idx} className="font-semibold text-blue-700 text-sm mt-2 mb-1">
-                {trimmed.replace('## ', '')}
+              <h3
+                key={idx}
+                className="font-semibold text-blue-700 text-sm mt-2 mb-1"
+              >
+                {trimmed.replace("## ", "")}
               </h3>
             );
           }
 
           // Bullet points
-          if (trimmed.startsWith('• ')) {
+          if (trimmed.startsWith("• ")) {
             return (
               <div key={idx} className="flex items-start ml-2">
                 <div className="w-1.5 h-1.5 bg-lime-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
@@ -163,8 +176,12 @@ function ChatHistory({ onBack }) {
               <div className="flex items-center space-x-3">
                 <MessageCircle className="w-6 h-6 text-blue-600" />
                 <div>
-                  <h1 className="text-lg font-bold text-gray-900">Chat History</h1>
-                  <p className="text-sm text-gray-600">{chats.length} total conversations</p>
+                  <h1 className="text-lg font-bold text-gray-900">
+                    Chat History
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {chats.length} total conversations
+                  </p>
                 </div>
               </div>
             </div>
@@ -177,8 +194,12 @@ function ChatHistory({ onBack }) {
         {chats.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">No Chat History</h2>
-            <p className="text-gray-600 mb-4">Start a conversation to see your chat history here.</p>
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              No Chat History
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Start a conversation to see your chat history here.
+            </p>
             <button
               onClick={onBack}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -189,7 +210,10 @@ function ChatHistory({ onBack }) {
         ) : (
           <div className="space-y-4">
             {chats.map((chat) => (
-              <div key={chat._id} className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow">
+              <div
+                key={chat._id}
+                className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow"
+              >
                 <div className="p-6">
                   {/* Chat Header */}
                   <div className="flex items-center justify-between mb-4">
@@ -200,17 +224,21 @@ function ChatHistory({ onBack }) {
                         ) : (
                           <XCircle className="w-4 h-4 text-red-500" />
                         )}
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          chat.success 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {chat.success ? 'Success' : 'Error'}
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            chat.success
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {chat.success ? "Success" : "Error"}
                         </span>
                       </div>
                       <div className="flex items-center space-x-1 text-gray-500">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-xs">{formatDate(chat.timestamp)}</span>
+                        <span className="text-xs">
+                          {formatDate(chat.timestamp)}
+                        </span>
                       </div>
                     </div>
                     <StarRating rating={chat.rating} />
@@ -222,7 +250,9 @@ function ChatHistory({ onBack }) {
                       <div className="bg-blue-100 p-1.5 rounded-lg">
                         <MessageCircle className="w-3 h-3 text-blue-600" />
                       </div>
-                      <span className="text-xs font-semibold text-gray-700 uppercase">Question</span>
+                      <span className="text-xs font-semibold text-gray-700 uppercase">
+                        Question
+                      </span>
                     </div>
                     <p className="text-sm text-gray-800 font-medium bg-blue-50 p-3 rounded-lg">
                       {chat.question}
@@ -235,7 +265,9 @@ function ChatHistory({ onBack }) {
                       <div className="bg-green-100 p-1.5 rounded-lg">
                         <MessageCircle className="w-3 h-3 text-green-600" />
                       </div>
-                      <span className="text-xs font-semibold text-gray-700 uppercase">Answer</span>
+                      <span className="text-xs font-semibold text-gray-700 uppercase">
+                        Answer
+                      </span>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       {renderText(chat.answer)}
@@ -247,7 +279,7 @@ function ChatHistory({ onBack }) {
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <div className="bg-blue-50 rounded-lg px-4 py-3 border border-blue-200">
                         <p className="text-xs font-semibold text-blue-800">
-                          📄 References: Page {chat.pageNumbers.join(', ')}
+                          📄 References: Page {chat.pageNumbers.join(", ")}
                         </p>
                       </div>
                     </div>
@@ -256,8 +288,12 @@ function ChatHistory({ onBack }) {
                   {/* Session Info */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Session: {chat.sessionId?.substring(0, 12)}...</span>
-                      <span>Message ID: {chat.messageId?.substring(0, 8)}...</span>
+                      <span>
+                        Session: {chat.sessionId?.substring(0, 12)}...
+                      </span>
+                      <span>
+                        Message ID: {chat.messageId?.substring(0, 8)}...
+                      </span>
                     </div>
                   </div>
                 </div>
