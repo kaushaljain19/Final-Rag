@@ -7,19 +7,25 @@ function ChatHistory({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // API Base URL configuration for production
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
   useEffect(() => {
     fetchChatHistory();
   }, []);
 
   const fetchChatHistory = async () => {
     try {
-      const response = await axios.get('/api/chats');
+      // Updated API call with base URL
+      const response = await axios.get(`${API_BASE_URL}/api/chats`);
       if (response.data.success) {
         setChats(response.data.chats);
+      } else {
+        setError('Failed to load chat history');
       }
     } catch (error) {
       console.error('Error fetching chat history:', error);
-      setError('Failed to load chat history');
+      setError('Failed to load chat history. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -94,6 +100,12 @@ function ChatHistory({ onBack }) {
     );
   };
 
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    fetchChatHistory();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -114,12 +126,20 @@ function ChatHistory({ onBack }) {
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retry
-          </button>
+          <div className="flex space-x-3 justify-center">
+            <button
+              onClick={handleRetry}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              onClick={onBack}
+              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Back to Chat
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -158,7 +178,13 @@ function ChatHistory({ onBack }) {
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-gray-800 mb-2">No Chat History</h2>
-            <p className="text-gray-600">Start a conversation to see your chat history here.</p>
+            <p className="text-gray-600 mb-4">Start a conversation to see your chat history here.</p>
+            <button
+              onClick={onBack}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Start Chatting
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -230,8 +256,8 @@ function ChatHistory({ onBack }) {
                   {/* Session Info */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Session: {chat.sessionId.substring(0, 12)}...</span>
-                      <span>Message ID: {chat.messageId.substring(0, 8)}...</span>
+                      <span>Session: {chat.sessionId?.substring(0, 12)}...</span>
+                      <span>Message ID: {chat.messageId?.substring(0, 8)}...</span>
                     </div>
                   </div>
                 </div>
