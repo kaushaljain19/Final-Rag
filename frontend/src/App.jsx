@@ -1,22 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader, Star, History } from 'lucide-react';
-import axios from 'axios';
-import ChatHistory from './ChatHistory';
+import React, { useState, useRef, useEffect } from "react";
+import { Send, Bot, User, Loader, Star, History } from "lucide-react";
+import axios from "axios";
+import ChatHistory from "./ChatHistory";
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // New state for history view
-  const [sessionId] = useState(() => `sess_${Date.now()}_${Math.random().toString(36).substring(2)}`);
+  const [sessionId] = useState(
+    () => `sess_${Date.now()}_${Math.random().toString(36).substring(2)}`
+  );
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   // API Base URL configuration for production
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}` || "";
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -33,41 +35,44 @@ function App() {
 
     const userMessage = {
       id: Date.now(),
-      type: 'user',
-      content: input.trim()
+      type: "user",
+      content: input.trim(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setLoading(true);
 
     try {
       // Updated API call with base URL
       const response = await axios.post(`${API_BASE_URL}/api/chat`, {
         message: input.trim(),
-        sessionId
+        sessionId,
       });
 
       if (response.data.success) {
         const botMessage = {
           id: Date.now() + 1,
-          type: 'bot',
+          type: "bot",
           content: response.data.answer,
           pageNumbers: response.data.pageNumbers || [],
           messageId: response.data.messageId,
           consistent: response.data.consistent || false,
-          rating: null
+          rating: null,
         };
-        setMessages(prev => [...prev, botMessage]);
+        setMessages((prev) => [...prev, botMessage]);
       }
     } catch (error) {
-      console.error('API Error:', error);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        type: 'bot',
-        content: "## Error\n\nSorry, something went wrong. Please try again.",
-        pageNumbers: []
-      }]);
+      console.error("API Error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          type: "bot",
+          content: "## Error\n\nSorry, something went wrong. Please try again.",
+          pageNumbers: [],
+        },
+      ]);
     } finally {
       setLoading(false);
       inputRef.current?.focus();
@@ -77,32 +82,37 @@ function App() {
   const submitRating = async (messageId, rating) => {
     try {
       // Updated API call with base URL
-      await axios.post(`${API_BASE_URL}/api/feedback`, { 
-        messageId, 
+      await axios.post(`${API_BASE_URL}/api/feedback`, {
+        messageId,
         rating,
-        sessionId 
+        sessionId,
       });
-      setMessages(prev => prev.map(msg =>
-        msg.messageId === messageId ? { ...msg, rating } : msg
-      ));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.messageId === messageId ? { ...msg, rating } : msg
+        )
+      );
     } catch (error) {
-      console.error('Rating error:', error);
+      console.error("Rating error:", error);
     }
   };
 
   const renderText = (rawText) => {
     let processedText = rawText;
-    
+
     // Force structure if missing
-    if (!processedText.includes('\n')) {
-      processedText = processedText.replace(/([.!?])\s*(##)/g, '$1\n\n$2');
-      processedText = processedText.replace(/(##[^•\n]+?)\s*(•|[A-Z])/g, '$1\n\n$2');
-      processedText = processedText.replace(/(•[^•##]*?)\s*(•)/g, '$1\n$2');
-      processedText = processedText.replace(/(•[^•##]*?)\s*(##)/g, '$1\n\n$2');
+    if (!processedText.includes("\n")) {
+      processedText = processedText.replace(/([.!?])\s*(##)/g, "$1\n\n$2");
+      processedText = processedText.replace(
+        /(##[^•\n]+?)\s*(•|[A-Z])/g,
+        "$1\n\n$2"
+      );
+      processedText = processedText.replace(/(•[^•##]*?)\s*(•)/g, "$1\n$2");
+      processedText = processedText.replace(/(•[^•##]*?)\s*(##)/g, "$1\n\n$2");
     }
 
-    const lines = processedText.split('\n').filter(line => line.trim());
-    
+    const lines = processedText.split("\n").filter((line) => line.trim());
+
     return (
       <div className="space-y-0">
         {lines.map((line, idx) => {
@@ -110,18 +120,18 @@ function App() {
           if (!trimmed) return null;
 
           // Main headings
-          if (trimmed.startsWith('## ')) {
+          if (trimmed.startsWith("## ")) {
             return (
               <div key={idx} className="mt-6 mb-4 first:mt-2">
                 <h2 className="text-lg font-bold text-blue-700 border-b-2 border-blue-200 pb-2">
-                  {trimmed.replace('## ', '')}
+                  {trimmed.replace("## ", "")}
                 </h2>
               </div>
             );
           }
 
           // Bullet points
-          if (trimmed.startsWith('• ')) {
+          if (trimmed.startsWith("• ")) {
             return (
               <div key={idx} className="flex items-start py-1.5 ml-2">
                 <div className="w-2 h-2 bg-lime-500 rounded-full mt-2.5 mr-4 flex-shrink-0"></div>
@@ -147,9 +157,12 @@ function App() {
 
   const formatInline = (text) => {
     return text.split(/(\*\*[^*]+\*\*)/).map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
+      if (part.startsWith("**") && part.endsWith("**")) {
         return (
-          <span key={i} className="font-bold text-gray-900 bg-yellow-100 px-1.5 py-0.5 rounded">
+          <span
+            key={i}
+            className="font-bold text-gray-900 bg-yellow-100 px-1.5 py-0.5 rounded"
+          >
             {part.slice(2, -2)}
           </span>
         );
@@ -159,7 +172,7 @@ function App() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -167,14 +180,16 @@ function App() {
 
   const StarRating = ({ rating, onRate, readonly = false }) => {
     const [hover, setHover] = useState(0);
-    
+
     return (
       <div className="flex space-x-1">
-        {[1,2,3,4,5].map(star => (
+        {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={`w-4 h-4 cursor-pointer transition-colors ${
-              star <= (hover || rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+              star <= (hover || rating)
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300"
             }`}
             onClick={() => !readonly && onRate?.(star)}
             onMouseEnter={() => !readonly && setHover(star)}
@@ -205,7 +220,7 @@ function App() {
                 </p>
               </div>
             </div>
-            
+
             {/* Right side - Show All Chats button */}
             <button
               onClick={() => setShowHistory(true)}
@@ -230,36 +245,55 @@ function App() {
                   Welcome! Ask me about hospital guidelines
                 </h2>
                 <div className="bg-white rounded-xl p-6 max-w-md mx-auto shadow-sm">
-                  <p className="font-semibold text-gray-700 mb-4 text-sm">Example questions:</p>
+                  <p className="font-semibold text-gray-700 mb-4 text-sm">
+                    Example questions:
+                  </p>
                   <div className="space-y-2 text-left">
                     <div className="flex items-start">
                       <span className="text-blue-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700 text-sm">"What is JCI?"</span>
+                      <span className="text-gray-700 text-sm">
+                        "What is JCI?"
+                      </span>
                     </div>
                     <div className="flex items-start">
                       <span className="text-blue-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700 text-sm">"What are infection control procedures?"</span>
+                      <span className="text-gray-700 text-sm">
+                        "What are infection control procedures?"
+                      </span>
                     </div>
                     <div className="flex items-start">
                       <span className="text-blue-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700 text-sm">"How do we handle emergencies?"</span>
+                      <span className="text-gray-700 text-sm">
+                        "How do we handle emergencies?"
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-6 py-4 message-enter ${
-                    msg.type === 'user'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white border shadow-sm'
-                  }`}>
+              messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${
+                    msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-6 py-4 message-enter ${
+                      msg.type === "user"
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "bg-white border shadow-sm"
+                    }`}
+                  >
                     {/* Header */}
                     <div className="flex items-center space-x-2 mb-3">
-                      {msg.type === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4 text-blue-600" />}
+                      {msg.type === "user" ? (
+                        <User className="w-4 h-4" />
+                      ) : (
+                        <Bot className="w-4 h-4 text-blue-600" />
+                      )}
                       <span className="text-xs font-bold uppercase">
-                        {msg.type === 'user' ? 'You' : 'Assistant'}
+                        {msg.type === "user" ? "You" : "Assistant"}
                       </span>
                       {msg.consistent && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
@@ -270,8 +304,10 @@ function App() {
 
                     {/* Content */}
                     <div>
-                      {msg.type === 'user' ? (
-                        <p className="text-white leading-relaxed">{msg.content}</p>
+                      {msg.type === "user" ? (
+                        <p className="text-white leading-relaxed">
+                          {msg.content}
+                        </p>
                       ) : (
                         renderText(msg.content)
                       )}
@@ -289,16 +325,22 @@ function App() {
                     )} */}
 
                     {/* Rating */}
-                    {msg.type === 'bot' && msg.messageId && (
+                    {msg.type === "bot" && msg.messageId && (
                       <div className="mt-5 pt-4 border-t border-gray-100 flex items-center space-x-3">
-                        <span className="text-xs text-gray-600 font-medium">Rate response:</span>
+                        <span className="text-xs text-gray-600 font-medium">
+                          Rate response:
+                        </span>
                         {msg.rating ? (
                           <div className="flex items-center space-x-2">
                             <StarRating rating={msg.rating} readonly />
-                            <span className="text-xs text-gray-600">Thanks!</span>
+                            <span className="text-xs text-gray-600">
+                              Thanks!
+                            </span>
                           </div>
                         ) : (
-                          <StarRating onRate={r => submitRating(msg.messageId, r)} />
+                          <StarRating
+                            onRate={(r) => submitRating(msg.messageId, r)}
+                          />
                         )}
                       </div>
                     )}
@@ -312,7 +354,9 @@ function App() {
                 <div className="bg-white border rounded-2xl px-6 py-4 flex items-center space-x-3 shadow-sm">
                   <Bot className="w-4 h-4 text-blue-600" />
                   <Loader className="w-4 h-4 animate-spin text-gray-500" />
-                  <span className="text-sm text-gray-600">Searching guidelines...</span>
+                  <span className="text-sm text-gray-600">
+                    Searching guidelines...
+                  </span>
                 </div>
               </div>
             )}
@@ -325,7 +369,7 @@ function App() {
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about hospital guidelines, JCI standards, procedures..."
                 className="flex-1 border border-gray-300 rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
