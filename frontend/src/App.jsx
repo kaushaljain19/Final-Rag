@@ -12,6 +12,9 @@ function App() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // API Base URL configuration for production
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -39,7 +42,8 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/chat', {
+      // Updated API call with base URL
+      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
         message: input.trim(),
         sessionId
       });
@@ -57,6 +61,7 @@ function App() {
         setMessages(prev => [...prev, botMessage]);
       }
     } catch (error) {
+      console.error('API Error:', error);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         type: 'bot',
@@ -71,7 +76,12 @@ function App() {
 
   const submitRating = async (messageId, rating) => {
     try {
-      await axios.post('/api/feedback', { messageId, rating });
+      // Updated API call with base URL
+      await axios.post(`${API_BASE_URL}/api/feedback`, { 
+        messageId, 
+        rating,
+        sessionId 
+      });
       setMessages(prev => prev.map(msg =>
         msg.messageId === messageId ? { ...msg, rating } : msg
       ));
@@ -82,7 +92,7 @@ function App() {
 
   const renderText = (rawText) => {
     let processedText = rawText;
-
+    
     // Force structure if missing
     if (!processedText.includes('\n')) {
       processedText = processedText.replace(/([.!?])\s*(##)/g, '$1\n\n$2');
@@ -92,7 +102,7 @@ function App() {
     }
 
     const lines = processedText.split('\n').filter(line => line.trim());
-
+    
     return (
       <div className="space-y-0">
         {lines.map((line, idx) => {
@@ -267,7 +277,7 @@ function App() {
                       )}
                     </div>
 
-                    {/* Page References
+                    {/* Page References - Commented out as in original
                     {msg.pageNumbers?.length > 0 && (
                       <div className="mt-5 pt-4 border-t border-gray-100">
                         <div className="bg-blue-50 rounded-lg px-4 py-3 border border-blue-200">
