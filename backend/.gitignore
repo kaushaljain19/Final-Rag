@@ -1,0 +1,33 @@
+# =====================================
+# Node.js Backend - GitIgnore
+# =====================================
+
+# Dependencies
+node_modules/
+
+# Environment variables (CRITICAL)
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# PDF Storage
+pdfs/
+uploads/
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AI Cache
+.cache/
