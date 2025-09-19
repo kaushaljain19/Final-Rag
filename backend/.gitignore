@@ -13,10 +13,6 @@ node_modules/
 logs/
 *.log
 
-# PDF Storage
-pdfs/
-uploads/
-
 # Database
 *.db
 *.sqlite

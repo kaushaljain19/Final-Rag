@@ -69,12 +69,6 @@ pids
 # PDF Processing & AI Related
 # =====================================
 
-# Processed PDFs storage
-pdfs/
-uploads/
-temp/
-processed/
-
 # Vector Database Cache
 pinecone_cache/
 vector_store/
